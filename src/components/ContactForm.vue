@@ -2,9 +2,11 @@
 import BasicText from './BasicText.vue'
 import PrimaryButton from './PrimaryButton.vue'
 import InputText from './InputText.vue'
+import InputGroup from './InputGroup.vue'
 import { useFormValidation } from '../composables/useFormValidation'
 import z from 'zod'
 import { onMounted, ref } from 'vue'
+import TextArea from './TextArea.vue'
 
 declare global {
   interface Window {
@@ -57,30 +59,32 @@ defineExpose({ formStatus })
 </script>
 
 <template>
-  <form :class="$style.contactForm" @submit="handleSubmit" @click="formStatus = 'loading'">
-    <InputText
-      id="name"
-      label="Name"
-      type="text"
-      v-model="formData.name"
-      :error="errors.name"
-      required
-      @blur="handleBlur('name')"
-      @input="handleInputChange('name')"
-    />
-    <InputText
-      id="lastName"
-      label="Last Name"
-      type="text"
-      v-model="formData.lastName"
-      :error="errors.lastName"
-      required
-      @blur="handleBlur('lastName')"
-      @input="handleInputChange('lastName')"
-    />
+  <form :class="$style.contactForm" @submit="handleSubmit">
+    <InputGroup>
+      <InputText
+        id="name"
+        label="First name"
+        type="text"
+        v-model="formData.name"
+        :error="errors.name"
+        required
+        @blur="handleBlur('name')"
+        @input="handleInputChange('name')"
+      />
+      <InputText
+        id="lastName"
+        label="Last name"
+        type="text"
+        v-model="formData.lastName"
+        :error="errors.lastName"
+        required
+        @blur="handleBlur('lastName')"
+        @input="handleInputChange('lastName')"
+      />
+    </InputGroup>
     <InputText
       id="email"
-      label="Email"
+      label="Work Email"
       type="email"
       v-model="formData.email"
       :error="errors.email"
@@ -88,10 +92,10 @@ defineExpose({ formStatus })
       @blur="handleBlur('email')"
       @input="handleInputChange('email')"
     />
-    <InputText
+    <TextArea
       id="message"
       label="Message"
-      type="text"
+      placeholder="Enter your message"
       v-model="formData.message"
       :error="errors.message"
       required
@@ -109,7 +113,7 @@ defineExpose({ formStatus })
       <p>An error occurred while sending your message. Please try again.</p>
     </div>
     <div
-      class="g-recaptcha"
+      :class="[$style.recaptcha, 'g-recaptcha']"
       data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
       data-size="invisible"
       data-callback="onCaptchaSuccess"
@@ -128,11 +132,15 @@ defineExpose({ formStatus })
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-m);
+  gap: var(--space-l);
 }
 
 .message {
   margin: var(--space-m);
   font-size: var(--text-s);
+}
+
+.recaptcha {
+  position: absolute;
 }
 </style>

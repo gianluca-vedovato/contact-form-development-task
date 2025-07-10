@@ -47,6 +47,8 @@ const floatingLabel = computed(() => {
 </template>
 
 <style module lang="scss">
+@use '@/assets/styles/_form-field.scss' as f;
+
 .inputText {
   display: flex;
   width: 100%;
@@ -56,26 +58,8 @@ const floatingLabel = computed(() => {
   position: relative;
 
   input {
-    outline: none;
-    border: none;
-    position: relative;
-    width: 100%;
-    padding: var(--space-l) var(--space-m) 0;
-    background-color: var(--color-background);
-    border-radius: var(--rounded);
-    font-size: var(--text-m);
-    line-height: 1.428;
-    color: var(--color-text);
+    @include f.formField();
     height: 3.375rem;
-
-    &:focus {
-      border: 1px solid var(--color-primary-100);
-      box-shadow: none;
-    }
-
-    &.error {
-      border: 1px solid var(--color-error);
-    }
   }
 
   label {
@@ -85,9 +69,9 @@ const floatingLabel = computed(() => {
     font-size: var(--text-m);
     color: var(--color-text-50);
     z-index: 1;
-    padding: var(--space-s) var(--space-m);
+    padding: 0.7rem var(--space-m);
     transform-origin: left top;
-    transform: scale(1) translateY(var(--space-s));
+    transform: scale(1) translateY(0.5rem);
     transition: transform 0.2s ease-out;
 
     &.floating {

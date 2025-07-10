@@ -1,0 +1,21 @@
+@mixin formField() {
+  outline: none;
+  border: none;
+  position: relative;
+  width: 100%;
+  padding: var(--space-l) var(--space-m) 0;
+  background-color: var(--color-background);
+  border-radius: var(--rounded);
+  font-size: var(--text-m);
+  line-height: var(--leading-m);
+  color: var(--color-text);
+
+  &:focus {
+    border: 1px solid var(--color-primary-100);
+    box-shadow: none;
+  }
+
+  &.error {
+    border: 1px solid var(--color-error);
+  }
+}

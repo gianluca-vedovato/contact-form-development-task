@@ -56,7 +56,7 @@ describe('ContactForm', () => {
     expect(wrapper.find('input[id="name"]').exists()).toBe(true)
     expect(wrapper.find('input[id="lastName"]').exists()).toBe(true)
     expect(wrapper.find('input[id="email"]').exists()).toBe(true)
-    expect(wrapper.find('input[id="message"]').exists()).toBe(true)
+    expect(wrapper.find('textarea[id="message"]').exists()).toBe(true)
 
     // Check that submit button is present
     expect(wrapper.find('button[type="submit"]').exists()).toBe(true)
@@ -101,14 +101,6 @@ describe('ContactForm', () => {
     const errorMessage = wrapper.find('[role="alert"]')
     expect(errorMessage.exists()).toBe(true)
     expect(errorMessage.text()).toContain('An error occurred while sending your message')
-  })
-
-  it('sets loading status when form is clicked', async () => {
-    const wrapper = mount(ContactForm)
-
-    await wrapper.find('form').trigger('click')
-
-    expect(wrapper.vm.formStatus).toBe('loading')
   })
 
   it('renders reCAPTCHA div with correct attributes', () => {

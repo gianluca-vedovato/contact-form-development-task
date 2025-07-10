@@ -7,7 +7,7 @@
 <style module lang="scss">
 .basicText {
   font-size: var(--text-m);
-  line-height: 1.428;
+  line-height: var(--leading-m);
   color: var(--color-text-50);
   a {
     color: var(--color-primary-100);

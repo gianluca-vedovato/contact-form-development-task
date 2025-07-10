@@ -4,6 +4,7 @@ $color-primary-50: #f1ecf6;
 $color-text-100: #000000;
 $color-text-50: #74777e;
 $color-background: #ffffff;
+$color-accent-100: #f49906;
 $color-error: #c70b3d;
 $color-success: #0a900a;
 
@@ -12,6 +13,7 @@ $font-body: 'Roboto', sans-serif;
 $font-weight-normal: 400;
 $font-weight-medium: 500;
 $text-m: 0.875rem;
+$text-s: 0.75rem;
 
 // Breakpoints
 $breakpoint-sm: 40rem;
@@ -26,3 +28,6 @@ $space-s: 0.625rem;
 $space-m: 0.9375rem;
 $space-l: 1.25rem;
 $space-xl: 2.5rem;
+
+// Base Styles
+$rounded: 0.5rem;

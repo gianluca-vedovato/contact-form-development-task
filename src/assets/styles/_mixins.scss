@@ -8,8 +8,7 @@ $breakpoints: (
   '2xl': $breakpoint-2xl,
 );
 
-// Responsive mixin
-@mixin responsive($breakpoint) {
+@mixin mq($breakpoint) {
   @if map-has-key($breakpoints, $breakpoint) {
     @media (min-width: map-get($breakpoints, $breakpoint)) {
       @content;

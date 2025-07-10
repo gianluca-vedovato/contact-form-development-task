@@ -1,28 +1,32 @@
-@import './variables.scss';
-@import './mixins.scss';
+@use './variables';
 
 :root {
   // Colors
-  --color-primary-100: #{$color-primary-100};
-  --color-primary-50: #{$color-primary-50};
-  --color-text-100: #{$color-text-100};
-  --color-text-50: #{$color-text-50};
-  --color-background: #{$color-background};
-  --color-error: #{$color-error};
-  --color-success: #{$color-success};
+  --color-primary-100: #{variables.$color-primary-100};
+  --color-primary-50: #{variables.$color-primary-50};
+  --color-text-100: #{variables.$color-text-100};
+  --color-text-50: #{variables.$color-text-50};
+  --color-background: #{variables.$color-background};
+  --color-accent-100: #{variables.$color-accent-100};
+  --color-error: #{variables.$color-error};
+  --color-success: #{variables.$color-success};
 
   // Typography
-  --font-body: #{$font-body};
-  --font-weight-normal: #{$font-weight-normal};
-  --font-weight-medium: #{$font-weight-medium};
-  --text-m: #{$text-m};
+  --font-body: #{variables.$font-body};
+  --font-weight-normal: #{variables.$font-weight-normal};
+  --font-weight-medium: #{variables.$font-weight-medium};
+  --text-m: #{variables.$text-m};
+  --text-s: #{variables.$text-s};
 
   // Spacing
-  --space-xs: #{$space-xs};
-  --space-s: #{$space-s};
-  --space-m: #{$space-m};
-  --space-l: #{$space-l};
-  --space-xl: #{$space-xl};
+  --space-xs: #{variables.$space-xs};
+  --space-s: #{variables.$space-s};
+  --space-m: #{variables.$space-m};
+  --space-l: #{variables.$space-l};
+  --space-xl: #{variables.$space-xl};
+
+  // Base Styles
+  --rounded: #{variables.$rounded};
 }
 
 *,
@@ -33,8 +37,12 @@
   font-weight: normal;
 }
 
+*:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-accent-100);
+  outline: none;
+}
+
 body {
-  min-height: 100vh;
   color: var(--color-text-100);
   background: var(--color-background);
   font-family: var(--font-body);
@@ -53,4 +61,25 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-m);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

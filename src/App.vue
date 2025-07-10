@@ -1,18 +1,12 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import MainCard from './components/MainCard.vue'
+import ContactForm from './components/ContactForm.vue'
 </script>
 
 <template>
-  <header>
-    <p>Hello World</p>
-    <span>in bold</span>
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main></main>
+  <MainCard>
+    <ContactForm />
+  </MainCard>
 </template>
 
 <style scoped lang="scss">

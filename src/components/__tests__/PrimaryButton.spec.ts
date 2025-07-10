@@ -1,18 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimaryButton from '../PrimaryButton.vue'
 
 describe('PrimaryButton', () => {
-  let consoleSpy: ReturnType<typeof vi.spyOn>
-
-  beforeEach(() => {
-    consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-  })
-
-  afterEach(() => {
-    consoleSpy.mockRestore()
-  })
-
   it('shows label correctly', () => {
     const label = 'Click me'
     const wrapper = mount(PrimaryButton, { props: { label } })

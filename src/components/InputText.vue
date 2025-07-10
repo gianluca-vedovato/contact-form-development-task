@@ -1,0 +1,105 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+
+defineOptions({
+  inheritAttrs: false,
+})
+
+defineProps<{
+  id: string
+  label: string
+  type: string
+  required: boolean
+  error?: string
+}>()
+
+const model = defineModel<string>()
+const hasFocus = ref(false)
+
+const floatingLabel = computed(() => {
+  return (model.value?.length ?? 0) > 0 || hasFocus.value
+})
+</script>
+
+<template>
+  <div :class="$style.inputText">
+    <label :for="id" :class="{ [$style.floating]: floatingLabel }"
+      >{{ label }} <span v-if="required">*</span></label
+    >
+    <input
+      :id="id"
+      :type="type"
+      :required="required"
+      v-model="model"
+      @focus="hasFocus = true"
+      @blur="hasFocus = false"
+      :class="{ [$style.error]: error }"
+      v-bind="{
+        ...$attrs,
+        'aria-describedby': error ? `${id}-error` : undefined,
+        'aria-invalid': error ? true : undefined,
+      }"
+    />
+    <p :id="`${id}-error`" :class="[$style.errorMessage, 'sr-only']" v-if="error" role="alert">
+      {{ error }}
+    </p>
+  </div>
+</template>
+
+<style module lang="scss">
+.inputText {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-s);
+  position: relative;
+
+  input {
+    outline: none;
+    border: none;
+    position: relative;
+    width: 100%;
+    padding: var(--space-l) var(--space-m) 0;
+    background-color: var(--color-background);
+    border-radius: var(--rounded);
+    font-size: var(--text-m);
+    line-height: 1.428;
+    color: var(--color-text);
+    height: 3.375rem;
+
+    &:focus {
+      border: 1px solid var(--color-primary-100);
+      box-shadow: none;
+    }
+
+    &.error {
+      border: 1px solid var(--color-error);
+    }
+  }
+
+  label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: var(--text-m);
+    color: var(--color-text-50);
+    z-index: 1;
+    padding: var(--space-s) var(--space-m);
+    transform-origin: left top;
+    transform: scale(1) translateY(var(--space-s));
+    transition: transform 0.2s ease-out;
+
+    &.floating {
+      transform: scale(0.857) translateY(0);
+    }
+  }
+
+  .errorMessage {
+    position: absolute;
+    color: var(--color-error);
+    font-size: var(--text-s);
+    margin-top: var(--space-xs);
+  }
+}
+</style>

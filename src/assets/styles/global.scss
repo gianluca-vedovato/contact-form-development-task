@@ -1,0 +1,56 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+:root {
+  // Colors
+  --color-primary-100: #{$color-primary-100};
+  --color-primary-50: #{$color-primary-50};
+  --color-text-100: #{$color-text-100};
+  --color-text-50: #{$color-text-50};
+  --color-background: #{$color-background};
+  --color-error: #{$color-error};
+  --color-success: #{$color-success};
+
+  // Typography
+  --font-body: #{$font-body};
+  --font-weight-normal: #{$font-weight-normal};
+  --font-weight-medium: #{$font-weight-medium};
+  --text-m: #{$text-m};
+
+  // Spacing
+  --space-xs: #{$space-xs};
+  --space-s: #{$space-s};
+  --space-m: #{$space-m};
+  --space-l: #{$space-l};
+  --space-xl: #{$space-xl};
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text-100);
+  background: var(--color-background);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-primary-100);
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}

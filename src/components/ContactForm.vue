@@ -6,7 +6,7 @@ import InputGroup from './InputGroup.vue'
 import { useFormValidation } from '@/composables/useFormValidation'
 import { useRecaptcha } from '@/composables/useRecaptcha'
 import z from 'zod'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import TextArea from './TextArea.vue'
 import { CircleCheck, CircleAlert } from 'lucide-vue-next'
 import { useSupabase } from '@/composables/useSupabase'
@@ -30,21 +30,20 @@ const {
 
 const { insertFormSubmission } = useSupabase()
 
-const submit = (token: string) => {
-  validateAndSubmit(async (data) => {
+const submit = async (token: string) => {
+  const result = await validateAndSubmit(async (data) => {
     // Form is valid, proceed with submission
-    try {
-      await insertFormSubmission({
-        ...data,
-        recaptchaToken: token,
-      })
-
-      formStatus.value = 'success'
-    } catch (error) {
-      console.error('Error inserting form submission:', error)
-      formStatus.value = 'error'
-    }
+    await insertFormSubmission({
+      ...data,
+      recaptchaToken: token,
+    })
   })
+
+  if (result.success) {
+    formStatus.value = 'success'
+  } else {
+    formStatus.value = 'error'
+  }
 }
 
 const { execute: executeRecaptcha } = useRecaptcha({
@@ -58,9 +57,9 @@ const handleSubmit = async (event: Event) => {
 
   try {
     const token = await executeRecaptcha()
-    submit(token)
+    await submit(token)
   } catch (error) {
-    console.error('reCAPTCHA execution failed:', error)
+    console.error('Form submission failed:', error)
     formStatus.value = 'error'
   }
 }
@@ -69,6 +68,14 @@ const submitButtonStatus = computed(() => {
   if (formStatus.value === 'loading') return 'loading'
   if (Object.values(errors).some((error) => error)) return 'disabled'
   return 'idle'
+})
+
+watch(formStatus, (newStatus: 'idle' | 'loading' | 'success' | 'error') => {
+  if (newStatus === 'success' || newStatus === 'error') {
+    setTimeout(() => {
+      formStatus.value = 'idle'
+    }, 3000)
+  }
 })
 
 defineExpose({ formStatus })

@@ -58,12 +58,12 @@ export function useFormValidation(schema: z.ZodObject<Record<string, z.ZodTypeAn
     return { success: true, data: formData }
   }
 
-  const handleSubmit = (onSuccess?: (data: Record<string, string>) => void) => {
+  const handleSubmit = async (onSuccess?: (data: Record<string, string>) => Promise<void>) => {
     const result = validateForm()
 
-    if (result.success) {
+    if (result.success && result.data) {
       messageSent.value = true
-      onSuccess?.(result.data)
+      await onSuccess?.(result.data)
       clearForm()
       return result
     }

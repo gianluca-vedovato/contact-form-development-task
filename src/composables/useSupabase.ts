@@ -7,7 +7,6 @@ export const useSupabase = () => {
   )
 
   const insertFormSubmission = async (formData: Record<string, string>) => {
-    console.log('Inserting form submission', formData)
     const { data, error } = await supabase.functions.invoke('form-submission', {
       body: formData,
     })

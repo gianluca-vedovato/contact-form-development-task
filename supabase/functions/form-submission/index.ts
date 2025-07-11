@@ -4,62 +4,91 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { createClient } from 'jsr:@supabase/supabase-js'
 
 console.log("Form submission function")
 
 const verifyRecaptcha = async (token: string): Promise<boolean> => {
-  const response = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
+  const formData = new URLSearchParams();
+  formData.append('secret', Deno.env.get('RECAPTCHA_SECRET_KEY') || '');
+  formData.append('response', token);
+
+  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
     method: 'POST',
-    body: JSON.stringify({
-      secret: Deno.env.get('RECAPTCHA_SECRET_KEY'),
-      response: token,
-    }),
-  })
-  const data = await response.json()
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+  const data = await response.json();
 
   if (data['error-codes']) {
-    throw new Error(data['error-codes'].join(', '))
+    throw new Error(data['error-codes'].join(', '));
   }
 
-  return data.success
+  return data.success;
+};
+
+const addCorsHeaders = (response: Response): Response => {
+  const headers = new Headers(response.headers)
+  headers.set('Access-Control-Allow-Origin', 'https://sb-form.netlify.app')
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  headers.set('Access-Control-Allow-Headers', '*')
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  })
 }
 
-
 Deno.serve(async (req) => {
-  const { firstName, lastName, email, message, recaptchaToken } = await req.json()
+  try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return addCorsHeaders(new Response(null, { status: 200 }))
+    }
 
-  const recaptchaSuccess = await verifyRecaptcha(recaptchaToken)
+    const { firstName, lastName, email, message, recaptchaToken } = await req.json()
 
-  if (!recaptchaSuccess) {
-    return new Response(JSON.stringify({ error: 'Recaptcha verification failed' }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    })
+    const recaptchaSuccess = await verifyRecaptcha(recaptchaToken)
+
+    if (!recaptchaSuccess) {
+      return addCorsHeaders(new Response(JSON.stringify({ error: 'Recaptcha verification failed' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      }))
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+    const data = {
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      message,
+    }
+
+    await supabase.from('form_submissions').insert(data)
+
+
+    return addCorsHeaders(new Response(JSON.stringify(data), {
+      headers: { "Content-Type": "application/json" }
+    }))
+  } catch (error) {
+    console.error('Function error:', error)
+    return addCorsHeaders(new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    }))
   }
-
-  const supabase = createClient(
-    Deno.env.get('VITE_SUPABASE_URL')!,
-    Deno.env.get('VITE_SUPABASE_SERVICE_ROLE_KEY')!
-  )
-
-  await supabase.from('form_submissions').insert({ email })
-
-  const data = {
-    firstName,
-    lastName,
-    email,
-    message,
-  }
-
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
 })
 
 /* To invoke locally:
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
+  1. Run `supabase start`
   2. Make an HTTP request:
 
   curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/form-submission' \

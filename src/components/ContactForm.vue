@@ -3,12 +3,13 @@ import BasicText from './BasicText.vue'
 import PrimaryButton from './PrimaryButton.vue'
 import InputText from './InputText.vue'
 import InputGroup from './InputGroup.vue'
-import { useFormValidation } from '../composables/useFormValidation'
-import { useRecaptcha } from '../composables/useRecaptcha'
+import { useFormValidation } from '@/composables/useFormValidation'
+import { useRecaptcha } from '@/composables/useRecaptcha'
 import z from 'zod'
 import { computed, ref } from 'vue'
 import TextArea from './TextArea.vue'
 import { CircleCheck, CircleAlert } from 'lucide-vue-next'
+import { useSupabase } from '@/composables/useSupabase'
 
 const formStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 
@@ -27,17 +28,24 @@ const {
   handleSubmit: validateAndSubmit,
 } = useFormValidation(contactFormSchema)
 
+const { insertFormSubmission } = useSupabase()
+
 const onCaptchaSuccess = (token: string) => {
-  console.log('Captcha success', token)
   formStatus.value = 'loading'
 
-  validateAndSubmit((data) => {
+  validateAndSubmit(async (data) => {
     // Form is valid, proceed with submission
-    console.log('Form submitted:', data)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await insertFormSubmission({
+        ...data,
+        recaptchaToken: token,
+      })
+
       formStatus.value = 'success'
-    }, 1000)
+    } catch (error) {
+      console.error('Error inserting form submission:', error)
+      formStatus.value = 'error'
+    }
   })
 }
 

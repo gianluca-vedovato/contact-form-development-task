@@ -7,8 +7,8 @@
 <style scoped lang="scss">
 .inputGroup {
   display: flex;
-  gap: 1px;
   width: 100%;
+  gap: 1px;
 
   :slotted(div) {
     flex: 1;

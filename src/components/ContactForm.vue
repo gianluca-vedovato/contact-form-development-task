@@ -7,6 +7,7 @@ import { useFormValidation } from '../composables/useFormValidation'
 import z from 'zod'
 import { onMounted, ref } from 'vue'
 import TextArea from './TextArea.vue'
+import { CircleCheck, CircleAlert } from 'lucide-vue-next'
 
 declare global {
   interface Window {
@@ -106,12 +107,16 @@ defineExpose({ formStatus })
       For information about our privacy practices and commitment to protecting your privacy, please
       review our <a href="#">Privacy Policy</a>.
     </BasicText>
-    <div :class="[$style.success, $style.message]" v-if="formStatus === 'success'" role="status">
-      <p>Your message has been sent. We will get back to you as soon as possible.</p>
-    </div>
-    <div :class="[$style.error, $style.message]" v-else-if="formStatus === 'error'" role="alert">
-      <p>An error occurred while sending your message. Please try again.</p>
-    </div>
+    <Transition name="message" :duration="300">
+      <div :class="[$style.success, $style.message]" v-if="formStatus === 'success'" role="status">
+        <CircleCheck :size="36" />
+        <p>Your message has been sent. We will get back to you as soon as possible.</p>
+      </div>
+      <div :class="[$style.error, $style.message]" v-else-if="formStatus === 'error'" role="alert">
+        <CircleAlert :size="36" />
+        <p>An error occurred while sending your message. Please try again.</p>
+      </div>
+    </Transition>
     <div
       :class="[$style.recaptcha, 'g-recaptcha']"
       data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
@@ -135,12 +140,51 @@ defineExpose({ formStatus })
   gap: var(--space-l);
 }
 
+.success {
+  color: var(--color-success);
+}
+
+.error {
+  color: var(--color-error);
+}
+
 .message {
-  margin: var(--space-m);
-  font-size: var(--text-s);
+  margin: var(--space-m) 0;
+  font-size: var(--text-m);
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  p {
+    color: var(--color-text-100);
+  }
 }
 
 .recaptcha {
   position: absolute;
+}
+</style>
+
+<style>
+.message-enter-active,
+.message-leave-active {
+  svg {
+    transition:
+      opacity 0.3s ease-in-out,
+      transform 0.3s ease-in-out;
+  }
+  p {
+    transition: opacity 0.3s ease-in-out;
+  }
+}
+
+.message-enter-from,
+.message-leave-to {
+  svg {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  p {
+    opacity: 0;
+  }
 }
 </style>

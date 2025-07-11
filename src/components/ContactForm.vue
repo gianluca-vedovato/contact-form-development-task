@@ -4,24 +4,16 @@ import PrimaryButton from './PrimaryButton.vue'
 import InputText from './InputText.vue'
 import InputGroup from './InputGroup.vue'
 import { useFormValidation } from '../composables/useFormValidation'
+import { useRecaptcha } from '../composables/useRecaptcha'
 import z from 'zod'
-import { onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import TextArea from './TextArea.vue'
 import { CircleCheck, CircleAlert } from 'lucide-vue-next'
 
-declare global {
-  interface Window {
-    grecaptcha: {
-      execute: () => void
-    }
-    onCaptchaSuccess: () => void
-    onCaptchaError: () => void
-  }
-}
 const formStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 
 const contactFormSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.email('Please enter a valid email address'),
   message: z.string().min(1, 'Message is required'),
@@ -35,25 +27,47 @@ const {
   handleSubmit: validateAndSubmit,
 } = useFormValidation(contactFormSchema)
 
-const handleSubmit = (event: Event) => {
-  event.preventDefault()
-  window.grecaptcha.execute()
-}
+const onCaptchaSuccess = (token: string) => {
+  console.log('Captcha success', token)
+  formStatus.value = 'loading'
 
-const onCaptchaSuccess = () => {
   validateAndSubmit((data) => {
     // Form is valid, proceed with submission
     console.log('Form submitted:', data)
+    // Simulate API call
+    setTimeout(() => {
+      formStatus.value = 'success'
+    }, 1000)
   })
 }
 
 const onCaptchaError = () => {
+  console.error('reCAPTCHA error occurred')
   formStatus.value = 'error'
 }
 
-onMounted(() => {
-  window.onCaptchaSuccess = onCaptchaSuccess
-  window.onCaptchaError = onCaptchaError
+const { isLoading: isRecaptchaLoading, execute: executeRecaptcha } = useRecaptcha({
+  sitekey: '6LcDN38rAAAAAK0MndMGS0G5H4dIdmUQRUblwNaf',
+  elementId: 'recaptcha-widget',
+  onSuccess: onCaptchaSuccess,
+  onError: onCaptchaError,
+})
+
+const handleSubmit = async (event: Event) => {
+  event.preventDefault()
+
+  try {
+    await executeRecaptcha()
+  } catch (error) {
+    console.error('reCAPTCHA execution failed:', error)
+    formStatus.value = 'error'
+  }
+}
+
+const submitButtonStatus = computed(() => {
+  if (formStatus.value === 'loading' || isRecaptchaLoading.value) return 'loading'
+  if (Object.values(errors).some((error) => error)) return 'disabled'
+  return 'idle'
 })
 
 defineExpose({ formStatus })
@@ -66,11 +80,11 @@ defineExpose({ formStatus })
         id="name"
         label="First name"
         type="text"
-        v-model="formData.name"
-        :error="errors.name"
+        v-model="formData.firstName"
+        :error="errors.firstName"
         required
-        @blur="handleBlur('name')"
-        @input="handleInputChange('name')"
+        @blur="handleBlur('firstName')"
+        @input="handleInputChange('firstName')"
       />
       <InputText
         id="lastName"
@@ -118,17 +132,20 @@ defineExpose({ formStatus })
       </div>
     </Transition>
     <div
+      id="recaptcha-widget"
       :class="[$style.recaptcha, 'g-recaptcha']"
-      data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+      data-sitekey="6LcDN38rAAAAAK0MndMGS0G5H4dIdmUQRUblwNaf"
       data-size="invisible"
       data-callback="onCaptchaSuccess"
       data-error-callback="onCaptchaError"
+      data-badge="inline"
     ></div>
-    <PrimaryButton
-      label="Send Message"
-      type="submit"
-      :status="formStatus === 'loading' ? 'loading' : 'idle'"
-    />
+    <PrimaryButton label="Send Message" type="submit" :status="submitButtonStatus" />
+    <BasicText size="s" :class="$style.recaptchaDisclaimer">
+      This site is protected by reCAPTCHA and the Google
+      <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+      <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+    </BasicText>
   </form>
 </template>
 

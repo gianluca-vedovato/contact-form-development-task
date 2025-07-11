@@ -74,10 +74,6 @@ onMounted(() => {
   color: var(--color-primary-50);
   padding: var(--space-s) var(--space-l);
   border-radius: var(--rounded);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.5;
-  font-weight: var(--font-weight-medium);
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.4);
   cursor: pointer;
   max-width: 250px;
@@ -102,6 +98,10 @@ onMounted(() => {
   .label {
     position: relative;
     display: block;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: var(--font-weight-medium);
     transition:
       transform 0.2s ease-in-out,
       opacity 0.2s ease-in-out;

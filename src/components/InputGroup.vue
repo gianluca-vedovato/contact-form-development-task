@@ -10,6 +10,10 @@
   width: 100%;
   gap: 1px;
 
+  &:has([aria-invalid='true']) {
+    gap: 0px;
+  }
+
   :slotted(div) {
     flex: 1;
     &:first-child {

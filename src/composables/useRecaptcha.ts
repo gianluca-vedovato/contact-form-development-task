@@ -16,13 +16,12 @@ declare global {
 interface RecaptchaOptions {
   sitekey: string
   elementId: string
-  onSuccess: (token: string) => void
-  onError: () => void
+  onSuccess?: (token: string) => void
+  onError?: () => void
 }
 
 export function useRecaptcha(options: RecaptchaOptions) {
   const isReady = ref(false)
-  const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   const initializeRecaptcha = () => {
@@ -70,29 +69,25 @@ export function useRecaptcha(options: RecaptchaOptions) {
         return
       }
 
-      isLoading.value = true
       error.value = null
 
       try {
         // Check if grecaptcha is available and has the execute method
         if (typeof window.grecaptcha !== 'undefined' && typeof window.grecaptcha.execute === 'function') {
-          // Set up temporary callbacks for this execution
-          const originalSuccess = window.onCaptchaSuccess
-          const originalError = window.onCaptchaError
 
           window.onCaptchaSuccess = (token: string) => {
-            isLoading.value = false
-            window.onCaptchaSuccess = originalSuccess
-            window.onCaptchaError = originalError
+            if (options.onSuccess) {
+              options.onSuccess(token)
+            }
             resolve(token)
           }
 
           window.onCaptchaError = () => {
-            isLoading.value = false
             const errorMsg = 'reCAPTCHA verification failed'
             error.value = errorMsg
-            window.onCaptchaSuccess = originalSuccess
-            window.onCaptchaError = originalError
+            if (options.onError) {
+              options.onError()
+            }
             reject(new Error(errorMsg))
           }
 
@@ -101,14 +96,12 @@ export function useRecaptcha(options: RecaptchaOptions) {
           const errorMsg = 'grecaptcha.execute is not available'
           console.error(errorMsg)
           error.value = errorMsg
-          isLoading.value = false
           reject(new Error(errorMsg))
         }
       } catch (err) {
         const errorMsg = 'reCAPTCHA execution failed'
         console.error(errorMsg, err)
         error.value = errorMsg
-        isLoading.value = false
         reject(new Error(errorMsg))
       }
     })
@@ -116,14 +109,9 @@ export function useRecaptcha(options: RecaptchaOptions) {
 
   const reset = () => {
     error.value = null
-    isLoading.value = false
   }
 
   onMounted(() => {
-    // Set up global callbacks
-    window.onCaptchaSuccess = options.onSuccess
-    window.onCaptchaError = options.onError
-
     window.onloadCallback = () => {
       // Initialize reCAPTCHA when the script loads if it's not already initialized
       if (typeof window.grecaptcha !== 'undefined') {
@@ -139,7 +127,6 @@ export function useRecaptcha(options: RecaptchaOptions) {
 
   return {
     isReady,
-    isLoading,
     error,
     execute,
     reset

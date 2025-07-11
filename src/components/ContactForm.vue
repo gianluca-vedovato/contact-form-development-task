@@ -30,9 +30,7 @@ const {
 
 const { insertFormSubmission } = useSupabase()
 
-const onCaptchaSuccess = (token: string) => {
-  formStatus.value = 'loading'
-
+const submit = (token: string) => {
   validateAndSubmit(async (data) => {
     // Form is valid, proceed with submission
     try {
@@ -49,23 +47,18 @@ const onCaptchaSuccess = (token: string) => {
   })
 }
 
-const onCaptchaError = () => {
-  console.error('reCAPTCHA error occurred')
-  formStatus.value = 'error'
-}
-
-const { isLoading: isRecaptchaLoading, execute: executeRecaptcha } = useRecaptcha({
+const { execute: executeRecaptcha } = useRecaptcha({
   sitekey: '6LcDN38rAAAAAK0MndMGS0G5H4dIdmUQRUblwNaf',
   elementId: 'recaptcha-widget',
-  onSuccess: onCaptchaSuccess,
-  onError: onCaptchaError,
 })
 
 const handleSubmit = async (event: Event) => {
   event.preventDefault()
+  formStatus.value = 'loading'
 
   try {
-    await executeRecaptcha()
+    const token = await executeRecaptcha()
+    submit(token)
   } catch (error) {
     console.error('reCAPTCHA execution failed:', error)
     formStatus.value = 'error'
@@ -73,7 +66,7 @@ const handleSubmit = async (event: Event) => {
 }
 
 const submitButtonStatus = computed(() => {
-  if (formStatus.value === 'loading' || isRecaptchaLoading.value) return 'loading'
+  if (formStatus.value === 'loading') return 'loading'
   if (Object.values(errors).some((error) => error)) return 'disabled'
   return 'idle'
 })

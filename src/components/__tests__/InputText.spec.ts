@@ -106,4 +106,53 @@ describe('InputText', () => {
     const label = wrapper.find('label')
     expect(label.text()).not.toContain('*')
   })
+
+  it('displays error message with correct styling and accessibility attributes', () => {
+    const errorMessage = 'Invalid email format'
+    const wrapper = mount(InputText, {
+      props: {
+        id: 'email-input',
+        label: 'Email',
+        type: 'email',
+        required: true,
+        error: errorMessage,
+      },
+    })
+
+    const errorElement = wrapper.find('[role="alert"]')
+    const input = wrapper.find('input')
+
+    // Check error message exists and has correct content
+    expect(errorElement.exists()).toBe(true)
+    expect(errorElement.text()).toBe(errorMessage)
+    expect(errorElement.attributes('id')).toBe('email-input-error')
+
+    // Check input has error styling
+    expect(input.classes().some((cls) => cls.includes('error'))).toBe(true)
+
+    // Check accessibility attributes
+    expect(input.attributes('aria-invalid')).toBe('true')
+    expect(input.attributes('aria-describedby')).toBe('email-input-error')
+  })
+
+  it('removes error message when error prop is cleared', async () => {
+    const wrapper = mount(InputText, {
+      props: {
+        id: 'test-input',
+        label: 'Test Label',
+        type: 'text',
+        required: false,
+        error: 'Some error',
+      },
+    })
+
+    let errorElement = wrapper.find('[role="alert"]')
+    expect(errorElement.exists()).toBe(true)
+
+    // Clear the error prop
+    await wrapper.setProps({ error: undefined })
+
+    errorElement = wrapper.find('[role="alert"]')
+    expect(errorElement.exists()).toBe(false)
+  })
 })

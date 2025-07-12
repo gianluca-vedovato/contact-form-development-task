@@ -120,7 +120,6 @@ npm run lint
 
 # 🔮 Future improvements
 
-- E2E tests with Playwright
 - Visual regression testing
 - Error monitoring (Sentry)
 - CI/CD for testing

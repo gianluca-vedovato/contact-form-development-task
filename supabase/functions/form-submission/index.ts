@@ -30,8 +30,12 @@ const verifyRecaptcha = async (token: string): Promise<boolean> => {
 };
 
 const addCorsHeaders = (response: Response): Response => {
+  // Allow requests from localhost or the production URL
+  const isLocal = Deno.env.get("ENV") === "local"
+  const origin = isLocal ? 'http://localhost:5173' : 'https://sb-form.netlify.app'
+
   const headers = new Headers(response.headers)
-  headers.set('Access-Control-Allow-Origin', 'https://sb-form.netlify.app')
+  headers.set('Access-Control-Allow-Origin', origin)
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   headers.set('Access-Control-Allow-Headers', '*')
 
@@ -85,15 +89,3 @@ Deno.serve(async (req) => {
     }))
   }
 })
-
-/* To invoke locally:
-
-  1. Run `supabase start`
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/form-submission' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/

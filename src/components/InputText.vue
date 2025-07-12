@@ -40,7 +40,7 @@ const floatingLabel = computed(() => {
         'aria-invalid': error ? true : undefined,
       }"
     />
-    <p :id="`${id}-error`" :class="[$style.errorMessage, 'sr-only']" v-if="error" role="alert">
+    <p :id="`${id}-error`" :class="$style.errorMessage" v-if="error" role="alert">
       {{ error }}
     </p>
   </div>
@@ -50,11 +50,7 @@ const floatingLabel = computed(() => {
 @use '@/assets/styles/_form-field.scss' as f;
 
 .inputText {
-  display: flex;
   width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-s);
   position: relative;
 
   input {
@@ -80,7 +76,6 @@ const floatingLabel = computed(() => {
   }
 
   .errorMessage {
-    position: absolute;
     color: var(--color-error);
     font-size: var(--text-s);
     margin-top: var(--space-xs);

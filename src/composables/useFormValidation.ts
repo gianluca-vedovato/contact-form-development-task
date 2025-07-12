@@ -1,3 +1,4 @@
+import { devLog } from '@/components/utils/dev-log'
 import { reactive, ref } from 'vue'
 import z from 'zod'
 
@@ -30,17 +31,6 @@ export function useFormValidation(schema: z.ZodObject<Record<string, z.ZodTypeAn
     errors[field] = error?.issues[0].message
   }
 
-  // Validate a single field on blur
-  const handleBlur = (field: string) => {
-    validateField(field)
-  }
-
-  // Validate a single field on input if there is an error
-  const handleInputChange = (field: string) => {
-    if (!errors[field]) return
-    validateField(field)
-  }
-
   // Validate the entire form
   const validateForm = () => {
     const { error } = schema.safeParse(formData)
@@ -58,17 +48,20 @@ export function useFormValidation(schema: z.ZodObject<Record<string, z.ZodTypeAn
     return { success: true, data: formData }
   }
 
-  const handleSubmit = async (onSuccess?: (data: Record<string, string>) => Promise<void>) => {
+  const handleSubmit = async (onSuccess?: (data: Record<string, string>) => Promise<void>): Promise<{ success: boolean, data?: Record<string, string>, errors?: Record<string, string | undefined> }> => {
     const result = validateForm()
+    devLog(`Form validation result: ${JSON.stringify(result)}`, 'useFormValidation.ts')
 
+    // If form is valid, call onSuccess and return the data
     if (result.success && result.data) {
       messageSent.value = true
       await onSuccess?.(result.data)
       clearForm()
-      return result
+      return { success: true, data: result.data }
     }
 
-    return result
+    // If form is invalid, return the errors
+    return { success: false, errors: result.errors }
   }
 
   return {
@@ -77,8 +70,6 @@ export function useFormValidation(schema: z.ZodObject<Record<string, z.ZodTypeAn
     messageSent,
     clearForm,
     validateField,
-    handleBlur,
-    handleInputChange,
     validateForm,
     handleSubmit,
   }

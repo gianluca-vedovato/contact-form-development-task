@@ -1,3 +1,4 @@
+import { devLog } from '@/components/utils/dev-log'
 import { ref, onMounted } from 'vue'
 
 declare global {
@@ -18,6 +19,7 @@ interface RecaptchaOptions {
   elementId: string
   onSuccess?: (token: string) => void
   onError?: () => void
+  timeoutMs?: number
 }
 
 export function useRecaptcha(options: RecaptchaOptions) {
@@ -49,7 +51,11 @@ export function useRecaptcha(options: RecaptchaOptions) {
     }
   }
 
-  const execute = (): Promise<string> => {
+  const execute = (): Promise<{ success: boolean, data?: { token: string }, error?: string }> => {
+    devLog('execute recaptcha', 'useRecaptcha.ts')
+
+    const timeoutMs = options.timeoutMs || 10000
+
     return new Promise((resolve, reject) => {
       if (!isReady.value) {
         const errorMsg = 'reCAPTCHA not ready'
@@ -71,20 +77,28 @@ export function useRecaptcha(options: RecaptchaOptions) {
 
       error.value = null
 
+      // Set up timeout to reject the promise if the recaptcha takes too long
+      const timeoutId = setTimeout(() => {
+        reject(new Error('reCAPTCHA verification timeout'))
+      }, timeoutMs)
+
       try {
         // Check if grecaptcha is available and has the execute method
         if (typeof window.grecaptcha !== 'undefined' && typeof window.grecaptcha.execute === 'function') {
-
+          devLog('grecaptcha is available and has the execute method', 'useRecaptcha.ts')
           window.onCaptchaSuccess = (token: string) => {
+            devLog('Recaptcha success', 'useRecaptcha.ts')
+            clearTimeout(timeoutId)
             if (options.onSuccess) {
               options.onSuccess(token)
             }
-            resolve(token)
+            resolve({ success: true, data: { token } })
           }
 
           window.onCaptchaError = () => {
             const errorMsg = 'reCAPTCHA verification failed'
             error.value = errorMsg
+            clearTimeout(timeoutId)
             if (options.onError) {
               options.onError()
             }
@@ -96,12 +110,14 @@ export function useRecaptcha(options: RecaptchaOptions) {
           const errorMsg = 'grecaptcha.execute is not available'
           console.error(errorMsg)
           error.value = errorMsg
+          clearTimeout(timeoutId)
           reject(new Error(errorMsg))
         }
       } catch (err) {
         const errorMsg = 'reCAPTCHA execution failed'
         console.error(errorMsg, err)
         error.value = errorMsg
+        clearTimeout(timeoutId)
         reject(new Error(errorMsg))
       }
     })
@@ -119,10 +135,11 @@ export function useRecaptcha(options: RecaptchaOptions) {
       }
     }
 
-    // If grecaptcha is already available, initialize immediately
-    if (typeof window.grecaptcha !== 'undefined') {
-      initializeRecaptcha()
-    }
+    const script = document.createElement('script')
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit'
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
   })
 
   return {

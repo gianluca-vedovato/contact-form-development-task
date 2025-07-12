@@ -8,8 +8,10 @@ import { useRecaptcha } from '@/composables/useRecaptcha'
 import z from 'zod'
 import { computed, ref, watch } from 'vue'
 import TextArea from './TextArea.vue'
-import { CircleCheck, CircleAlert } from 'lucide-vue-next'
 import { useSupabase } from '@/composables/useSupabase'
+import RecaptchaElement from './RecaptchaElement.vue'
+import FormSubmissionMessage from './FormSubmissionMessage.vue'
+import { devLog } from './utils/dev-log'
 
 const formStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 
@@ -23,66 +25,95 @@ const contactFormSchema = z.object({
 const {
   formData,
   errors,
-  handleBlur,
-  handleInputChange,
+  validateField,
   handleSubmit: validateAndSubmit,
 } = useFormValidation(contactFormSchema)
 
 const { insertFormSubmission } = useSupabase()
 
-const submit = async (token: string) => {
-  const result = await validateAndSubmit(async (data) => {
-    // Form is valid, proceed with submission
-    await insertFormSubmission({
-      ...data,
-      recaptchaToken: token,
-    })
-  })
-
-  if (result.success) {
-    formStatus.value = 'success'
-  } else {
-    formStatus.value = 'error'
-  }
-}
-
 const { execute: executeRecaptcha } = useRecaptcha({
   sitekey: '6LcDN38rAAAAAK0MndMGS0G5H4dIdmUQRUblwNaf',
   elementId: 'recaptcha-widget',
+  timeoutMs: 10000,
 })
 
-const handleSubmit = async (event: Event) => {
-  event.preventDefault()
-  formStatus.value = 'loading'
-
-  try {
-    const token = await executeRecaptcha()
-    await submit(token)
-  } catch (error) {
-    console.error('Form submission failed:', error)
-    formStatus.value = 'error'
-  }
+// Validate a single field on blur
+const handleBlur = (field: string) => {
+  validateField(field)
 }
 
+// Validate a single field on input if there is an error
+const handleInputChange = (field: string) => {
+  if (!errors[field]) return
+  validateField(field)
+}
+
+// Form submission handler
+// 1. Form validation
+// 2. Recaptcha validation
+// 3. Supabase submission
+const handleSubmit = async () => {
+  devLog('handleSubmit', 'ContactForm.vue')
+  formStatus.value = 'loading'
+
+  validateAndSubmit(async (data) => {
+    try {
+      // Execute recaptcha with built-in timeout
+      const { data: recaptchaValidationData } = await executeRecaptcha()
+      devLog(
+        `Recaptcha execution result: ${recaptchaValidationData?.token ? 'success' : 'error'}`,
+        'ContactForm.vue',
+      )
+
+      if (!recaptchaValidationData) {
+        formStatus.value = 'error'
+        return
+      }
+
+      // Submit form with built-in timeout
+      const submissionResult = await insertFormSubmission({
+        ...data,
+        recaptchaToken: recaptchaValidationData.token,
+      })
+
+      devLog(`Submission result: ${JSON.stringify(submissionResult)}`, 'ContactForm.vue')
+      if (!submissionResult.success) {
+        formStatus.value = 'error'
+        return
+      }
+      devLog('Form submission successful', 'ContactForm.vue')
+      formStatus.value = 'success'
+    } catch (error) {
+      devLog(
+        `Form submission error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'ContactForm.vue',
+      )
+      formStatus.value = 'error'
+    }
+  })
+}
+
+// Submit button is in loading state if form is loading
+// Submit button is disabled if there are errors
+// Submit button is idle if there are no errors
 const submitButtonStatus = computed(() => {
   if (formStatus.value === 'loading') return 'loading'
   if (Object.values(errors).some((error) => error)) return 'disabled'
   return 'idle'
 })
 
+// Reset form status after 3 seconds
 watch(formStatus, (newStatus: 'idle' | 'loading' | 'success' | 'error') => {
   if (newStatus === 'success' || newStatus === 'error') {
     setTimeout(() => {
       formStatus.value = 'idle'
-    }, 3000)
+    }, 6000)
   }
 })
-
-defineExpose({ formStatus })
 </script>
 
 <template>
-  <form :class="$style.contactForm" @submit="handleSubmit">
+  <form :class="$style.contactForm" @submit.prevent="handleSubmit">
     <InputGroup>
       <InputText
         id="name"
@@ -129,31 +160,9 @@ defineExpose({ formStatus })
       For information about our privacy practices and commitment to protecting your privacy, please
       review our <a href="#">Privacy Policy</a>.
     </BasicText>
-    <Transition name="message" :duration="300">
-      <div :class="[$style.success, $style.message]" v-if="formStatus === 'success'" role="status">
-        <CircleCheck :size="36" />
-        <p>Your message has been sent. We will get back to you as soon as possible.</p>
-      </div>
-      <div :class="[$style.error, $style.message]" v-else-if="formStatus === 'error'" role="alert">
-        <CircleAlert :size="36" />
-        <p>An error occurred while sending your message. Please try again.</p>
-      </div>
-    </Transition>
-    <div
-      id="recaptcha-widget"
-      :class="[$style.recaptcha, 'g-recaptcha']"
-      data-sitekey="6LcDN38rAAAAAK0MndMGS0G5H4dIdmUQRUblwNaf"
-      data-size="invisible"
-      data-callback="onCaptchaSuccess"
-      data-error-callback="onCaptchaError"
-      data-badge="inline"
-    ></div>
+    <FormSubmissionMessage :status="formStatus" />
     <PrimaryButton label="Send Message" type="submit" :status="submitButtonStatus" />
-    <BasicText size="s" :class="$style.recaptchaDisclaimer">
-      This site is protected by reCAPTCHA and the Google
-      <a href="https://policies.google.com/privacy">Privacy Policy</a> and
-      <a href="https://policies.google.com/terms">Terms of Service</a> apply.
-    </BasicText>
+    <RecaptchaElement />
   </form>
 </template>
 
@@ -163,53 +172,5 @@ defineExpose({ formStatus })
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-l);
-}
-
-.success {
-  color: var(--color-success);
-}
-
-.error {
-  color: var(--color-error);
-}
-
-.message {
-  margin: var(--space-m) 0;
-  font-size: var(--text-m);
-  display: flex;
-  align-items: center;
-  gap: var(--space-s);
-  p {
-    color: var(--color-text-100);
-  }
-}
-
-.recaptcha {
-  position: absolute;
-}
-</style>
-
-<style>
-.message-enter-active,
-.message-leave-active {
-  svg {
-    transition:
-      opacity 0.3s ease-in-out,
-      transform 0.3s ease-in-out;
-  }
-  p {
-    transition: opacity 0.3s ease-in-out;
-  }
-}
-
-.message-enter-from,
-.message-leave-to {
-  svg {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  p {
-    opacity: 0;
-  }
 }
 </style>

@@ -1,3 +1,4 @@
+import { devLog, devError } from '@/components/utils/dev-log'
 import { createClient } from '@supabase/supabase-js'
 
 export const useSupabase = () => {
@@ -7,12 +8,18 @@ export const useSupabase = () => {
   )
 
   const insertFormSubmission = async (formData: Record<string, string>) => {
+    devLog('Inserting form submission', 'useSupabase.ts')
     const { data, error } = await supabase.functions.invoke('form-submission', {
       body: formData,
     })
 
-    if (error) throw error
-    return data
+    if (error) {
+      devError(`Error inserting form submission: ${JSON.stringify(error)}`, 'useSupabase.ts')
+      throw error
+    }
+
+    devLog('Form submission inserted', 'useSupabase.ts')
+    return { success: true, data }
   }
 
   return { insertFormSubmission }

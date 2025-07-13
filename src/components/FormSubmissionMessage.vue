@@ -45,6 +45,7 @@ defineProps<{
 .message-enter-active,
 .message-leave-active {
   svg {
+    will-change: transform, opacity;
     transition:
       opacity 0.3s ease-in-out,
       transform 0.3s ease-in-out;

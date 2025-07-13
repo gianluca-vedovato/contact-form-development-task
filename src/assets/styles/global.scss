@@ -38,9 +38,11 @@
   font-weight: normal;
 }
 
-*:focus-visible {
-  box-shadow: 0 0 0 2px var(--color-accent-100);
-  outline: none;
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
 body {
@@ -53,6 +55,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+*:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-accent-100);
+  outline: none;
+}
+
 a {
   color: var(--color-primary-100);
   text-decoration: none;
@@ -62,6 +69,25 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 #app {

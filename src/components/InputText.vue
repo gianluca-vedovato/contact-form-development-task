@@ -68,6 +68,7 @@ const floatingLabel = computed(() => {
     padding: 0.7rem var(--space-m);
     transform-origin: left top;
     transform: scale(1) translateY(0.5rem);
+    will-change: transform;
     transition: transform 0.2s ease-out;
 
     &.floating {

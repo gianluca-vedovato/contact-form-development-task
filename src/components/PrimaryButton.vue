@@ -80,6 +80,7 @@ onMounted(() => {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  will-change: transform, box-shadow, background-color;
   transition:
     transform 0.1s ease-in-out,
     box-shadow 0.1s ease-in-out,

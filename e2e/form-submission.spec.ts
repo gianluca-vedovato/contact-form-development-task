@@ -17,6 +17,25 @@ test('should send a message', async ({ page }) => {
   await expect(page.getByText('Your message has been sent. We will get back to you as soon as possible.')).toBeHidden();
 });
 
+
+test('error message should be display correctly', async ({ page }) => {
+  await page.goto('http://localhost:5173/');
+  await page.getByLabel('First name *').focus();
+  await page.getByLabel('First name *').blur();
+
+  await expect(page.getByText('First name is required')).toBeVisible();
+
+  await page.getByLabel('Work Email *').focus();
+  await page.getByLabel('Work Email *').blur();
+  await expect(page.getByText('Email is required')).toBeVisible();
+
+  await page.getByLabel('Work Email *').fill('test@email');
+  await page.getByLabel('Work Email *').blur();
+  await expect(page.getByText('Please enter a valid email address')).toBeVisible();
+
+  await expect(page.getByRole('button', { name: 'Send Message' })).toBeDisabled();
+});
+
 test('should fill the form with tab and enter', async ({ page }) => {
   await page.goto('http://localhost:5173/');
   await page.keyboard.press('Tab');
@@ -40,7 +59,6 @@ test('should fill the form with tab and enter', async ({ page }) => {
 });
 
 test('should handle backend unavailability', async ({ page }) => {
-
   // Intercept the Supabase function call and return an error
   await page.route('**/functions/v1/form-submission', async route => {
     await route.fulfill({

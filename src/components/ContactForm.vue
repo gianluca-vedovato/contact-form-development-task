@@ -18,7 +18,7 @@ const formStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 const contactFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  email: z.email('Please enter a valid email address'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   message: z.string().min(1, 'Message is required'),
 })
 

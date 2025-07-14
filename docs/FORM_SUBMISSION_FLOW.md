@@ -41,6 +41,7 @@ const handleSubmit = async () => {
 
   validateAndSubmit(async (data) => {
     try {
+      // Recaptcha client validation
       const { data: recaptchaValidationData } = await executeRecaptcha()
 
       if (!recaptchaValidationData) {
@@ -48,6 +49,7 @@ const handleSubmit = async () => {
         return
       }
 
+      // Invoke Supabase edge function
       const submissionResult = await insertFormSubmission({
         ...data,
         recaptchaToken: recaptchaValidationData.token,

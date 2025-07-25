@@ -77,9 +77,7 @@ const floatingLabel = computed(() => {
   }
 
   .errorMessage {
-    color: var(--color-error);
-    font-size: var(--text-s);
-    margin-top: var(--space-xs);
+    @include f.errorMessage();
   }
 }
 </style>

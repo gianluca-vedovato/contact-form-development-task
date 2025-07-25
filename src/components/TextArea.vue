@@ -15,21 +15,23 @@ const model = defineModel<string>()
 </script>
 
 <template>
-  <div :class="$style.textArea">
-    <label :for="id"> {{ label }} <span v-if="required">*</span> </label>
-    <textarea
-      :id="id"
-      :required="required"
-      :placeholder="placeholder"
-      v-model="model"
-      :class="{ [$style.error]: error }"
-      v-bind="{
-        ...$attrs,
-        'aria-describedby': error ? `${id}-error` : undefined,
-        'aria-invalid': error ? true : undefined,
-      }"
-    />
-    <p :id="`${id}-error`" :class="[$style.errorMessage, 'sr-only']" v-if="error" role="alert">
+  <div :class="$style.wrapper">
+    <div :class="$style.textArea">
+      <label :for="id"> {{ label }} <span v-if="required">*</span> </label>
+      <textarea
+        :id="id"
+        :required="required"
+        :placeholder="placeholder"
+        v-model="model"
+        :class="{ [$style.error]: error }"
+        v-bind="{
+          ...$attrs,
+          'aria-describedby': error ? `${id}-error` : undefined,
+          'aria-invalid': error ? true : undefined,
+        }"
+      />
+    </div>
+    <p :id="`${id}-error`" :class="[$style.errorMessage]" v-if="error" role="alert">
       {{ error }}
     </p>
   </div>
@@ -37,6 +39,10 @@ const model = defineModel<string>()
 
 <style module lang="scss">
 @use '@/assets/styles/_form-field.scss' as f;
+
+.wrapper {
+  width: 100%;
+}
 
 .textArea {
   display: flex;
@@ -66,5 +72,8 @@ const model = defineModel<string>()
     font-size: var(--text-m);
     color: var(--color-text-100);
   }
+}
+.errorMessage {
+  @include f.errorMessage();
 }
 </style>

@@ -120,6 +120,7 @@ onMounted(() => {
   &.status-disabled {
     pointer-events: none;
     background-color: var(--color-text-50);
+    box-shadow: none;
   }
 }
 

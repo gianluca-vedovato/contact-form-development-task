@@ -67,7 +67,7 @@ const handleSubmit = async () => {
 
       if (!recaptchaValidationData) {
         formStatus.value = 'error'
-        return
+        throw new Error('Recaptcha validation failed')
       }
 
       // Submit form with built-in timeout
@@ -79,7 +79,7 @@ const handleSubmit = async () => {
       devLog(`Submission result: ${JSON.stringify(submissionResult)}`, 'ContactForm.vue')
       if (!submissionResult.success) {
         formStatus.value = 'error'
-        return
+        throw new Error('Form submission failed')
       }
       devLog('Form submission successful', 'ContactForm.vue')
       formStatus.value = 'success'

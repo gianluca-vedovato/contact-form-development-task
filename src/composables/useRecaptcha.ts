@@ -1,4 +1,4 @@
-import { devLog } from '@/components/utils/dev-log'
+import { devLog } from '@/utils/dev-log'
 import { ref, onMounted } from 'vue'
 
 declare global {

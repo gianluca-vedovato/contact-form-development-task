@@ -11,7 +11,7 @@ import TextArea from './TextArea.vue'
 import { useSupabase } from '@/composables/useSupabase'
 import RecaptchaElement from './RecaptchaElement.vue'
 import FormSubmissionMessage from './FormSubmissionMessage.vue'
-import { devLog } from './utils/dev-log'
+import { devLog } from '@/utils/dev-log'
 
 const formStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
 

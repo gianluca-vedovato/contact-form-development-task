@@ -1,4 +1,4 @@
-import { devLog, devError } from '@/components/utils/dev-log'
+import { devLog, devError } from '@/utils/dev-log'
 import { createClient } from '@supabase/supabase-js'
 
 export const useSupabase = () => {
